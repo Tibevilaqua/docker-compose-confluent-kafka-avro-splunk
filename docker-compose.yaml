@@ -1,0 +1,38 @@
+---
+version: '2'
+services:
+  mysql:
+    hostname: mysql
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: confluent
+      MYSQL_USER: confluent
+      MYSQL_PASSWORD: confluent
+      MYSQL_DATABASE: connect_test
+    volumes:
+      - './mysql/sql:/docker-entrypoint-initdb.d'
+
+  splunk:
+    hostname: splunk
+    image: splunk/splunk:7.0.3
+    environment:
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_CMD: 'edit user admin -password admin -role admin -auth admin:changeme'
+      SPLUNK_ENABLE_LISTEN: 9997
+    ports:
+      - 8000:8000
+    volumes:
+      - './splunk/splunk_app:/opt/splunk/etc/apps/splunk_app'
+
+  kafka-connect:
+    hostname: kafka-connect
+    build: kafka-connect
+    volumes:
+      - './kafka-connect/resources/confluent-5.1.2:/opt/kafka-connect/confluent/confluent-5.1.2'
+      - './kafka-connect/resources/connectors-config:/opt/kafka-connect/confluent/connectors-config'
+      - './kafka-connect/resources/logs:/opt/kafka-connect/confluent/logs/'
+    ports:
+      - 9000:9000
+      - 9092:9092
+      - 8081:8081
+
